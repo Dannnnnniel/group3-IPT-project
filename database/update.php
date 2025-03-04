@@ -1,25 +1,38 @@
 <?php
-    session_start();
-    include_once 'database.php';
+session_start();
+include('database.php'); 
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        $id = $_POST['id'];
-        $name = $_POST['name'];
-        $age = $_POST['age'];
-        $position = $_POST['position'];
-        $sex = $_POST['sex'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-        $sql = "UPDATE employees SET first_name = '$first_name', last_name = '$last_name', position = '$position', address = '$address' WHERE id = '$id'";
+    $id = $_POST['id'];
+    $fullName = $_POST['full_name'];
+    $middleName = $_POST['middle_name'];
+    $lastName = $_POST['last_name'];
+    $age = $_POST['age'];
+    $position = $_POST['position'];
+    $sex = $_POST['sex'];
 
-        if (mysqli_query($conn, $sql)) {
-            $_SESSION['status'] = 'updated';
-            header('Location: ../dashboard.php');
+   
+    $sql = "UPDATE barangay_official 
+            SET full_name = ?, middle_name = ?, last_name = ?, age = ?, position = ?, sex = ?
+            WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param('sssissi', $fullName, $middleName, $lastName, $age, $position, $sex, $id);
+        if ($stmt->execute()) {
+            $_SESSION['status'] = 'updated'; 
         } else {
-            $_SESSION['status'] = 'error';
+            $_SESSION['status'] = 'error'; 
+            error_log("Update Error: " . $stmt->error); 
         }
-
-        mysqli_close($conn);
-        header('Location: ../dashboard.php');
-        exit();
+        $stmt->close();
+    } else {
+        $_SESSION['status'] = 'error'; 
+        error_log("Prepare Error: " . $conn->error); 
     }
+
+
+    header('Location: ../dashboard.php');
+    exit();
+}
 ?>
